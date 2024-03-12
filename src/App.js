@@ -1,19 +1,15 @@
-
 import './App.css';
 import React, { useState, useRef } from 'react';
 import QRCode from 'qrcode.react';
 
 const App = () => {
   const [inputData, setInputData] = useState('');
-  const [scanned, setScanned] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
   const imageInputRef = useRef(null);
 
   const handleInputChange = (e) => {
     setInputData(e.target.value);
-    setScanned(false); // Reset scanned status when input changes
   };
-
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -24,6 +20,27 @@ const App = () => {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const downloadQRCode = () => {
+    const svg = document.querySelector('svg'); // Select the SVG element
+    const svgData = new XMLSerializer().serializeToString(svg); // Convert SVG to string
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = document.createElement('img');
+
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0);
+      const pngUrl = canvas.toDataURL('image/png');
+      const downloadLink = document.createElement('a');
+      downloadLink.href = pngUrl;
+      downloadLink.download = 'qrcode.png';
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    };
+
+    img.src = 'data:image/svg+xml;base64,' + btoa(svgData); // Encode SVG data to base64
   };
 
   return (
@@ -41,8 +58,6 @@ const App = () => {
         />
       </div>
 
-
-
       <div className="image-upload-container">
         <label htmlFor="imageInput">Upload Image:</label>
         <input
@@ -54,7 +69,7 @@ const App = () => {
         />
       </div>
 
-      {inputData && !scanned && (
+      {inputData && (
         <div className="qrcode-container">
           {imageUrl && (
             <img className="background-image" src={imageUrl} alt="Background" />
@@ -69,28 +84,12 @@ const App = () => {
           />
         </div>
       )}
+
+      {inputData && (
+        <button onClick={downloadQRCode}>Download QR Code</button>
+      )}
     </div>
   );
 };
-// function App() {
-//   return (
-//     <div className="App">
-//       <header className="App-header">
-//         <img src={logo} className="App-logo" alt="logo" />
-//         <p>
-//           Edit <code>src/App.js</code> and save to reload.
-//         </p>
-//         <a
-//           className="App-link"
-//           href="https://reactjs.org"
-//           target="_blank"
-//           rel="noopener noreferrer"
-//         >
-//           Learn React
-//         </a>
-//       </header>
-//     </div>
-//   );
-// }
 
 export default App;
